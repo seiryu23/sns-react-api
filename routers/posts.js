@@ -44,14 +44,32 @@ router.post("/post", isAuthenticated, async (req, res) => {
 router.get("/get_latest_post", async (req,res) => {
     try {
         const latestPosts = await prisma.post.findMany({
-            take: 10, orderBy: { createdAt: "desc" },
-            include: {
+// 2023.7.6 Add Start
+            select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                authorId: true,
                 author: {
-                    include: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
                         profile: true,
-                    }
+                    },
                 },
-            }
+            },
+// 2023.7.6 Add End
+            take: 10, orderBy: { createdAt: "desc" },
+// 2023.7.6 Del Start
+//            include: {
+//                author: {
+//                    include: {
+//                        profile: true,
+//                    }
+//                },
+//            }
+// 2023.7.6 Del End
         });
         return res.json(latestPosts);
     } catch (error) {
@@ -66,15 +84,32 @@ router.get("/:userId", async(req, res) => {
 
     try {
         const userPosts = await prisma.post.findMany({
+// 2023.7.6 Add Start
+            select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                authorId: true,
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                    },
+                },
+            },
+// 2023.7.6 Add End
             where: {
                 authorId: parseInt(userId),
             },
             orderBy: {
                 createdAt: "desc",
             },
-            include: {
-                author: true,
-            },
+// 2023.7.6 Del Start
+//            include: {
+//                author: true,
+//            },
+// 2023.7.6 Del End
         });
         return res.status(200).json(userPosts);
     } catch (error) {

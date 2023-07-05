@@ -7,6 +7,7 @@ require("dotenv").config();
 // object
 const prisma = new PrismaClient();
 
+// 認証用API
 router.get("/find", isAuthenticated, async (req, res) => {
     try {
         const user = await prisma.user.findUnique({ where: {id: req.userId } });
@@ -19,19 +20,37 @@ router.get("/find", isAuthenticated, async (req, res) => {
     }
 });
 
+// プロファイル情報取得API
 router.get("/profile/:userId", async (req, res) => {
     const { userId } = req.params;
 
     try {
         const profile = await prisma.profile.findUnique({
-            where: { userId: parseInt(userId) },
-            include: {
+// 2023.7.6 Chg Start
+//            where: { userId: parseInt(userId) },
+//            include: {
+//                user: {
+//                    include: {
+//                        profile: true,
+//                    },
+//                },
+//            },
+            select: {
+                id: true,
+                bio: true,
+                profileImageUrl: true,
+                userId: true,
                 user: {
-                    include: {
-                        profile: true,
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        posts: true,
                     },
                 },
             },
+            where: { userId: parseInt(userId) },
+// 2023.7.6 Chg End
         });
 
         if(!profile) {
